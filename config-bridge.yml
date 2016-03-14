@@ -1,0 +1,11 @@
+server:
+  maxThreads: 32
+  minThreads: 8
+  maxQueuedRequests: 1024
+  rootPath: '/api/*'
+  applicationConnectors:
+  - type: http
+    port: 9123
+  adminConnectors:
+  - type: http
+    port: 9124
