@@ -16,6 +16,7 @@
   <properties>
     <scala.version>2.11.7</scala.version>
     <scala.version.tools>2.11</scala.version.tools>
+    <dropwizard.version>0.9.2</dropwizard.version>
   </properties>
 
   <build>
@@ -75,7 +76,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>io.bluejay.Bluejay</mainClass>
+                  <mainClass>io.bluejay.Bridge</mainClass>
                 </transformer>
               </transformers>
             </configuration>
@@ -153,6 +154,16 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-joda</artifactId>
       <version>2.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-core</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ru.vyarus</groupId>
+      <artifactId>dropwizard-guicey</artifactId>
+      <version>3.2.0</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
