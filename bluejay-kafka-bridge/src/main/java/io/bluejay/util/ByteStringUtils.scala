@@ -10,8 +10,6 @@ object ByteStringUtils {
       data.indexOf('\n') match {
         case -1 =>
           (acc, data)
-        case 0 =>
-          splitLinesAux(data.slice(1, data.length), acc :+ ByteString.empty)
         case index =>
           val (head, tail) = data.splitAt(index)
           splitLinesAux(tail.slice(1, tail.length), acc :+ head)
