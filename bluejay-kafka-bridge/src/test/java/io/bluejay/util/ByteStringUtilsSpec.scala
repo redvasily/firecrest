@@ -7,16 +7,14 @@ import org.scalatest.{PropSpec, Matchers}
 
 class ByteStringUtilsSpec extends PropSpec with PropertyChecks with Matchers {
   def splitLines(data: ByteString) = ByteStringUtils.splitLines(data)
+  val newLine = ByteString(10)
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(
-    minSuccessful = 100,
+    minSuccessful = 1000,
     minSize = 1)
 
   def concat(lines: Seq[ByteString], rest: ByteString): ByteString = {
-    val newLine = ByteString(10)
-    var expected = ByteString()
-    lines.foreach(l => expected ++= (l ++ newLine))
-    expected ++ rest
+    (lines :+ rest).reduce((a, b) => a ++ newLine ++ b)
   }
 
   def mapInput(in: Vector[Byte]): ByteString = {
