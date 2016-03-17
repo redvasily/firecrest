@@ -9,6 +9,10 @@ import akka.util.ByteString
 
 import scala.annotation.tailrec
 
+object TcpListener {
+  case class Line(val data: ByteString)
+}
+
 class TcpListener extends Actor {
   import Tcp._
   import context.system
@@ -35,6 +39,9 @@ class TcpListener extends Actor {
 
 class ConnectionHandler extends Actor {
   import Tcp._
+  import TcpListener.Line
+  import io.bluejay.util.ByteStringUtils.splitLines
+
   val log = Logging(context.system, this)
   var buffer = ByteString.empty
 
@@ -43,28 +50,20 @@ class ConnectionHandler extends Actor {
       //      sender() ! Write(data)
       log.info("Received: {}", data.utf8String)
       val (lines, remainder) = splitLines(data)
-      // append first line to the existing buffer, emmit all of the lines
 
-      buffer = remainder
+      lines.size match {
+        case 0 =>
+          // there were no new lines
+          buffer ++= remainder
+        case _ =>
+          // there were some lines
+          context.parent ! Line(buffer ++ lines.head)
+          lines.tail foreach { line => context.parent ! Line(line)}
+          buffer = remainder
+      }
 
     case PeerClosed =>
       log.info("PeerClosed")
       context stop self
-  }
-
-  private def splitLines(data: ByteString): (Seq[String], ByteString) = {
-    splitLines(data, Vector.empty[String])
-  }
-
-  @tailrec
-  private def splitLines(data: ByteString, acc: Vector[String]): (Seq[String], ByteString) = {
-    data.indexOf('\n') match {
-      case -1 =>
-        (acc, data)
-
-      case index =>
-        val (head, tail) = data.splitAt(index)
-        splitLines(tail, acc :+ head.utf8String)
-    }
   }
 }
