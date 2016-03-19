@@ -2,18 +2,12 @@ package io.bluejay.actors
 
 import java.net.InetSocketAddress
 
-import akka.actor.{Props, Actor}
+import akka.actor.{ActorRef, Props, Actor}
 import akka.event.Logging
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
 
-import scala.annotation.tailrec
-
-object TcpListener {
-  case class Line(val data: ByteString)
-}
-
-class TcpListener extends Actor {
+class TcpListener(receiver: ActorRef) extends Actor {
   import Tcp._
   import context.system
 
@@ -31,15 +25,14 @@ class TcpListener extends Actor {
 
     case c @ Connected(remote, local) =>
       log.info("Connected: {}", c)
-      val handler = context.actorOf(Props[ConnectionHandler])
+      val handler = context.actorOf(Props(classOf[ConnectionHandler], receiver))
       val connection = sender()
       connection ! Register(handler)
   }
 }
 
-class ConnectionHandler extends Actor {
+class ConnectionHandler(receiver: ActorRef) extends Actor {
   import Tcp._
-  import TcpListener.Line
   import io.bluejay.util.ByteStringUtils.splitLines
 
   val log = Logging(context.system, this)
@@ -56,8 +49,8 @@ class ConnectionHandler extends Actor {
           buffer ++= remainder
         case _ =>
           // there were some lines
-          context.parent ! buffer ++ lines.head
-          lines.tail foreach { line => context.parent ! line }
+          receiver ! buffer ++ lines.head
+          lines.tail foreach { line => receiver ! line }
           buffer = remainder
       }
 

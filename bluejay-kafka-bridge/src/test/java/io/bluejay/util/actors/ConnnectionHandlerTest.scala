@@ -50,7 +50,7 @@ class ConnnectionHandlerTest extends FlatSpec with Matchers {
 case class Send(data: ByteString)
 
 class Helper extends Actor {
-  val child = context.actorOf(Props[ConnectionHandler])
+  val child = context.actorOf(Props(classOf[ConnectionHandler], self))
   var lines = Vector.empty[ByteString]
 
   override def receive = {
