@@ -1,14 +1,14 @@
 package io.bluejay.util.actors
 
-import akka.actor.{ActorSystem, ActorRef, Props, Actor}
-import akka.actor.Actor.Receive
-import scala.concurrent.{Await, Future}
-import akka.pattern.ask
-import scala.concurrent.duration._
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.io.Tcp
-import akka.util.{Timeout, ByteString}
-import io.bluejay.actors.{TcpListener, ConnectionHandler}
-import org.scalatest.{BeforeAndAfter, FlatSpec, FunSuite, Matchers}
+import akka.pattern.ask
+import akka.util.{ByteString, Timeout}
+import io.bluejay.actors.ConnectionHandler
+import org.scalatest.{FlatSpec, Matchers}
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class ConnnectionHandlerTest extends FlatSpec with Matchers {
 
@@ -30,31 +30,33 @@ class ConnnectionHandlerTest extends FlatSpec with Matchers {
 
   "no new lines on the input" should "produce no output" in withHelper {
     helper =>
-      helper ! ByteString("foo")
-      Thread.sleep(1000)
+      helper ! Send(ByteString("foo"))
+      Thread.sleep(100)
       lines(helper).size shouldBe 0
   }
 
   "some lines on the input" should "produce some lines" in withHelper {
     helper =>
-      helper ! ByteString("foo\n")
-      Thread.sleep(1000)
+      val x = ByteString("foo\n")
+      val y = ByteString("foo")
+      helper ! Send(x)
+      Thread.sleep(100)
       val l = lines(helper)
       l.size shouldBe 1
       l shouldBe Vector(ByteString("foo"))
   }
 }
 
-class Helper extends Actor {
-  import Tcp._
+case class Send(data: ByteString)
 
-  var lines = Vector.empty[TcpListener.Line]
+class Helper extends Actor {
   val child = context.actorOf(Props[ConnectionHandler])
+  var lines = Vector.empty[ByteString]
 
   override def receive = {
-    case data: ByteString =>
+    case Send(data) =>
       child ! new Tcp.Received(data)
-    case line: TcpListener.Line =>
+    case line: ByteString =>
       lines :+= line
     case "lines" =>
       sender ! lines

@@ -48,7 +48,6 @@ class ConnectionHandler extends Actor {
   def receive = {
     case Received(data) =>
       //      sender() ! Write(data)
-      log.info("Received: {}", data.utf8String)
       val (lines, remainder) = splitLines(data)
 
       lines.size match {
@@ -57,8 +56,8 @@ class ConnectionHandler extends Actor {
           buffer ++= remainder
         case _ =>
           // there were some lines
-          context.parent ! Line(buffer ++ lines.head)
-          lines.tail foreach { line => context.parent ! Line(line)}
+          context.parent ! buffer ++ lines.head
+          lines.tail foreach { line => context.parent ! line }
           buffer = remainder
       }
 
