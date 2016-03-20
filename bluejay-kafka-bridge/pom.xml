@@ -177,6 +177,11 @@
       <version>3.2.0</version>
     </dependency>
     <dependency>
+      <groupId>com.softwaremill.reactivekafka</groupId>
+      <artifactId>reactive-kafka-core_2.11</artifactId>
+      <version>0.10.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.scalactic</groupId>
       <artifactId>scalactic_2.11</artifactId>
       <version>2.2.6</version>
