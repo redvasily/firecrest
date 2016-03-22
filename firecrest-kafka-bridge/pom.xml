@@ -1,11 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>firecrest</groupId>
-  <artifactId>firecrest-misc</artifactId>
+  <artifactId>firecrest-kafka-bridge</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>firecrest-misc</name>
+  <name>firecrest-kafka-bridge</name>
   <url>http://maven.apache.org</url>
 
   <parent>
@@ -17,6 +16,7 @@
   <properties>
     <scala.version>2.11.7</scala.version>
     <scala.version.tools>2.11</scala.version.tools>
+    <dropwizard.version>0.9.2</dropwizard.version>
   </properties>
 
   <build>
@@ -74,9 +74,20 @@
             </goals>
             <configuration>
               <transformers>
+                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
+                  <!--<resource>reference.conf</resource>-->
+                <!--</transformer>-->
+                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+                  <!--<mainClass>io.bluejay.Bridge</mainClass>-->
+                <!--</transformer>-->
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>firecrest.Firecrest</mainClass>
+                  <manifestEntries>
+                    <Main-Class>firecrest.Bridge</Main-Class>
+                  </manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>reference.conf</resource>
                 </transformer>
               </transformers>
             </configuration>
@@ -154,6 +165,38 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-joda</artifactId>
       <version>2.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-core</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ru.vyarus</groupId>
+      <artifactId>dropwizard-guicey</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.softwaremill.reactivekafka</groupId>
+      <artifactId>reactive-kafka-core_2.11</artifactId>
+      <version>0.10.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scalactic</groupId>
+      <artifactId>scalactic_2.11</artifactId>
+      <version>2.2.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_2.11</artifactId>
+      <version>2.2.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scalacheck</groupId>
+      <artifactId>scalacheck_2.11</artifactId>
+      <version>1.12.5</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

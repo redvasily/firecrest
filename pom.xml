@@ -4,15 +4,15 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.bluejay</groupId>
-  <artifactId>bluejay</artifactId>
+  <groupId>firecrest</groupId>
+  <artifactId>firecrest</artifactId>
   <packaging>pom</packaging>
   <version>1.0</version>
-  <name>Bluejay</name>
+  <name>Firecrest</name>
 
   <modules>
     <module>misc</module>
-    <module>bluejay-kafka-bridge</module>
+    <module>firecrest-kafka-bridge</module>
   </modules>
 
   <build>
@@ -72,7 +72,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>io.bluejay.Bluejay</mainClass>
+                  <mainClass>firecrest.Firecrest</mainClass>
                 </transformer>
               </transformers>
             </configuration>
