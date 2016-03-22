@@ -12,7 +12,7 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 object Firecrest extends App {
   println("Started")
 
-  implicit val system = ActorSystem("bluejay")
+  implicit val system = ActorSystem("firecrest")
   val materializer = ActorMaterializer()
 
   val client: TransportClient = TransportClient.builder().build()

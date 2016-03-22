@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import firecrest.Message
 
 object JsonTest extends App {
   println("Started")

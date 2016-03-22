@@ -1,5 +1,5 @@
 =======
-Bluejay
+firecrest
 =======
 
 Kafka instructions
@@ -15,14 +15,14 @@ Start the kafka server::
 
 Create a topic (once)::
 
-    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic bluejay-messages
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic firecrest-messages
 
 Sending messages::
 
-    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic bluejay-messages
+    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic firecrest-messages
 
 Consuming messages::
 
-    bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic bluejay-messages --from-beginning
+    bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic firecrest-messages --from-beginning
 
 

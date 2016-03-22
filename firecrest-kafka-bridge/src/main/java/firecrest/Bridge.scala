@@ -9,7 +9,7 @@ import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
 class BridgeConfiguration extends Configuration {}
 
 class Bridge extends Application[BridgeConfiguration] {
-  override def getName: String = "bluejay-bridge"
+  override def getName: String = "firecrest-bridge"
 
   override def initialize(bootstrap: Bootstrap[BridgeConfiguration]): Unit = {
     super.initialize(bootstrap)

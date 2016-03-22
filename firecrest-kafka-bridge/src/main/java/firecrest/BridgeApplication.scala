@@ -49,7 +49,7 @@ class BridgeApplication @Inject()(system: ActorSystem) extends Managed {
     val kafka = new ReactiveKafka()
     val subscriber: Subscriber[ProducerMessage[Array[Byte], Array[Byte]]] = kafka.publish(ProducerProperties(
       bootstrapServers = "localhost:9092",
-      topic = "bluejay-messages",
+      topic = "firecrest-messages",
       valueSerializer = new ByteArraySerializer()
     ))
     val kafkaSink = Sink.fromSubscriber(subscriber)
