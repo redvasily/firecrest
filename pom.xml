@@ -12,6 +12,7 @@
 
   <modules>
     <module>misc</module>
+    <module>firecrest-common</module>
     <module>firecrest-kafka-bridge</module>
     <module>firecrest-indexer</module>
   </modules>

@@ -1,6 +1,6 @@
-package firecrest.Indexer
+package firecrest
 
-import io.dropwizard.setup.{Environment, Bootstrap}
+import io.dropwizard.setup.{Bootstrap, Environment}
 import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
@@ -16,6 +16,8 @@ class Indexer extends Application[IndexerConfiguration] {
     bootstrap.addBundle(
       GuiceBundle.builder[IndexerConfiguration]()
         .installers(classOf[ManagedInstaller])
+        .modules(new ActorSystemModule(getName))
+        .extensions(classOf[IndexerApplication])
         .build())
   }
 
