@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.concurrent.duration._
 
-class KafkaGraphActor extends Actor with ActorLogging {
+class KafkaOutputActor extends Actor with ActorLogging {
   implicit val materializer = ActorMaterializer()
 
   import context._

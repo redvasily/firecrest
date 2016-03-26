@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 class SupervisorActor extends Actor with ActorLogging {
   import context._
 
-  val kafkaSink = actorOf(Props[KafkaGraphActor], "kafka-graph")
+  val kafkaSink = actorOf(Props[KafkaOutputActor], "kafka-graph")
   system.actorOf(Props(classOf[TcpListener], kafkaSink), "listener")
 
   override def preStart() = {
