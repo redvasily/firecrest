@@ -3,7 +3,6 @@ package firecrest
 import java.io.ByteArrayOutputStream
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import firecrest.Message
 import org.elasticsearch.client.support.AbstractClient
 
 class EsSink(val objectMapper: ObjectMapper, val client: AbstractClient) {

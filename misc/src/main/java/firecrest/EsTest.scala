@@ -6,7 +6,7 @@ import java.net.InetAddress
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import firecrest.Message
+//import firecrest.Message
 import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.settings.Settings
