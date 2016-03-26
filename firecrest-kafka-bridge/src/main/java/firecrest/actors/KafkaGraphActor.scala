@@ -1,16 +1,17 @@
 package firecrest.actors
 
 import akka.actor._
-import akka.stream.{ClosedShape, OverflowStrategy, ActorMaterializer}
 import akka.stream.scaladsl._
+import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy}
 import akka.util.ByteString
-import com.softwaremill.react.kafka.{ValueProducerMessage, ProducerProperties, ReactiveKafka}
+import com.softwaremill.react.kafka._
 import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.concurrent.duration._
 
 class KafkaGraphActor extends Actor with ActorLogging {
   implicit val materializer = ActorMaterializer()
+
   import context._
 
   val kafka = new ReactiveKafka()
@@ -31,8 +32,8 @@ class KafkaGraphActor extends Actor with ActorLogging {
         val bcast = builder.add(Broadcast[ByteString](2))
         val printSink = Sink.foreach[String](line => println(s"Sending: $line"))
         val toString = Flow[ByteString].map(byteString => byteString.utf8String)
-        val toKafkaMessage = Flow[ByteString].map(byteString => ValueProducerMessage(byteString.toArray))
-        //          val kafka = builder.add(kafkaSink)
+        val toKafkaMessage = Flow[ByteString].map(
+          byteString => ValueProducerMessage(byteString.toArray))
 
         // @formatter:off
         src.out ~> bcast ~> toKafkaMessage ~> kafka
@@ -59,6 +60,5 @@ class KafkaGraphActor extends Actor with ActorLogging {
       log.info("Asking to crah")
       system.scheduler.scheduleOnce(3000 millis, self, "die")
       Thread.sleep(1000)
-//      self ! PoisonPill
   }
 }
