@@ -1,0 +1,64 @@
+package firecrest.actors
+
+import akka.actor._
+import akka.stream.{ClosedShape, OverflowStrategy, ActorMaterializer}
+import akka.stream.scaladsl._
+import akka.util.ByteString
+import com.softwaremill.react.kafka.{ValueProducerMessage, ProducerProperties, ReactiveKafka}
+import org.apache.kafka.common.serialization.ByteArraySerializer
+
+import scala.concurrent.duration._
+
+class KafkaGraphActor extends Actor with ActorLogging {
+  implicit val materializer = ActorMaterializer()
+  import context._
+
+  val kafka = new ReactiveKafka()
+  val producerProperties = ProducerProperties(
+    bootstrapServers = "localhost:9092",
+    topic = "firecrest-messages",
+    valueSerializer = new ByteArraySerializer()
+  )
+  val producerActorProps: Props = kafka.producerActorProps(producerProperties)
+  val kafkaSink = Sink.actorSubscriber(producerActorProps)
+  val source = Source.actorRef[ByteString](16, OverflowStrategy.dropNew)
+
+  val graph = RunnableGraph.fromGraph(GraphDSL.create(source, kafkaSink)((_, _)) {
+    implicit builder =>
+      (src, kafka) =>
+        import GraphDSL.Implicits._
+
+        val bcast = builder.add(Broadcast[ByteString](2))
+        val printSink = Sink.foreach[String](line => println(s"Sending: $line"))
+        val toString = Flow[ByteString].map(byteString => byteString.utf8String)
+        val toKafkaMessage = Flow[ByteString].map(byteString => ValueProducerMessage(byteString.toArray))
+        //          val kafka = builder.add(kafkaSink)
+
+        // @formatter:off
+        src.out ~> bcast ~> toKafkaMessage ~> kafka
+                   bcast ~> toString ~> printSink
+        // @formatter:on
+        ClosedShape
+  })
+
+  val (sourceActor, sinkActor) = graph.run()
+
+  context.watch(sinkActor)
+
+  override def receive: Receive = {
+    case "die" =>
+      log.info("Witness me")
+      throw new RuntimeException("Kafka failure")
+
+    case data: ByteString =>
+      log.info(s"Forwarding: ${data.utf8String}")
+      sourceActor ! data
+
+    case terminated: Terminated =>
+      log.info(s"Received terminated: $terminated")
+      log.info("Asking to crah")
+      system.scheduler.scheduleOnce(3000 millis, self, "die")
+      Thread.sleep(1000)
+//      self ! PoisonPill
+  }
+}
