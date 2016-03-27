@@ -59,6 +59,5 @@ class KafkaOutputActor extends Actor with ActorLogging {
       log.info(s"Received terminated: $terminated")
       log.info("Asking to crah")
       system.scheduler.scheduleOnce(3000 millis, self, "die")
-      Thread.sleep(1000)
   }
 }
