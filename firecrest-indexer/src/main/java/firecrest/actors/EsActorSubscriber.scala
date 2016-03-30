@@ -1,6 +1,7 @@
 package firecrest.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Props, Actor, ActorLogging}
+import akka.routing.{RoundRobinRoutingLogic, Router, ActorRefRoutee}
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, MaxInFlightRequestStrategy}
 import akka.util.ByteString
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -26,14 +27,23 @@ class EsActorSubscriber(client: AbstractClient) extends ActorSubscriber with Act
       override def inFlightInternally: Int = activeRequests
     }
 
+  val router = {
+    val routees = Vector.fill(maxConcurrentRequests) {
+      ActorRefRoutee(context.actorOf(Props[EsIndexWorker]))
+    }
+    Router(RoundRobinRoutingLogic(), routees)
+  }
 
   override def receive = {
     case msg @ OnNext(Batch(messages)) =>
+      val batch = msg.element.asInstanceOf[Batch]
       activeRequests += 1
+      log.info(s"Sending a request to a worker: $batch. activeRequests: $activeRequests")
+      router.route(batch, self)
 
-    case "tick" =>
-      log.info("tick")
-
+    case Done =>
+      activeRequests -= 1
+      log.info(s"Received a worker response. activeRequests: $activeRequests")
   }
 }
 
@@ -92,5 +102,4 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
     }
     timestamp.map(indexNameFormatter.print(_))
   }
-
 }
