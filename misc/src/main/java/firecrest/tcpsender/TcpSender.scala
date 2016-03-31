@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 
 object TcpSender extends App {
 
-  case class LogEntry(@JsonProperty("@timetamp") timestamp: DateTime,
+  case class LogEntry(@JsonProperty("@timestamp") timestamp: DateTime,
                       @JsonProperty("@version") version: Int = 1,
                       @JsonProperty("HOSTNAME") hostname: String = "myhostname",
                       level: String = "INFO",
