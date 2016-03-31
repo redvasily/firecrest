@@ -31,16 +31,16 @@ Logstash-encoded-messages
 
 ::
 
-{
-    "@timestamp": "2016-03-27T19:39:55.276+02:00",
-    "@version": 1,
-    "HOSTNAME": "lumpy",
-    "level": "INFO",
-    "level_value": 20000,
-    "logger_name": "io.bluejay.App",
-    "message": "Finished: wtf",
-    "thread_name": "main"
-}
+    {
+        "@timestamp": "2016-03-27T19:39:55.276+02:00",
+        "@version": 1,
+        "HOSTNAME": "lumpy",
+        "level": "INFO",
+        "level_value": 20000,
+        "logger_name": "io.bluejay.App",
+        "message": "Finished: wtf",
+        "thread_name": "main"
+    }
 
     {
         "@timestamp": "2016-03-27T19:39:54.251+02:00",
