@@ -112,6 +112,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>19.0</version>
+    </dependency>
+    <dependency>
       <groupId>firecrest</groupId>
       <artifactId>firecrest-common</artifactId>
       <version>1.0-SNAPSHOT</version>
@@ -152,9 +157,9 @@
       <version>0.3.8</version>
     </dependency>
     <dependency>
-      <groupId>com.softwaremill.reactivekafka</groupId>
-      <artifactId>reactive-kafka-core_2.11</artifactId>
-      <version>0.9.0</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>19.0</version>
     </dependency>
     <dependency>
       <groupId>org.elasticsearch</groupId>
