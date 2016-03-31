@@ -97,7 +97,7 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
     val timestamp = try {
       Some(DateTime.parse(dateTimeText))
     } catch {
-      case IllegalArgumentException =>
+      case _: IllegalArgumentException =>
         None
     }
     timestamp.map(indexNameFormatter.print(_))
