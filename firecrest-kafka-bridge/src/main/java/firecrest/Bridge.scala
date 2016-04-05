@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.scala._
 import com.fasterxml.jackson.module.scala.deser.{UntypedObjectDeserializerModule, ScalaNumberDeserializersModule}
 import com.fasterxml.jackson.module.scala.introspect.ScalaAnnotationIntrospectorModule
 import com.fasterxml.jackson.module.scala.modifiers.EitherModule
+import firecrest.guice.{BridgeConfigModule, BridgeActorsModule}
 import io.dropwizard.setup.{Bootstrap, Environment}
 import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
@@ -31,11 +32,20 @@ object DropwizardScalaModule extends DropwizardScalaModule
 
 case class KafkaConfig(@JsonProperty(value = "host", required = true)
                        host: String,
-                       @JsonProperty(value = "port", required = true)
-                       port: Int)
 
-class BridgeConfiguration(@JsonProperty(value = "tcpMessagePort", required = true)
+                       @JsonProperty(value = "port", required = true)
+                       port: Int,
+
+                       @JsonProperty(value = "topic", required = true)
+                       topic: String = "firecrest-messages")
+
+
+class BridgeConfiguration(@JsonProperty(value = "bindHost", required = true)
+                          val bindHost: String,
+
+                          @JsonProperty(value = "tcpMessagePort", required = true)
                           val tcpMessagePort: Int,
+
                           @JsonProperty(value="kafka", required = true)
                           val kafka: KafkaConfig)
   extends Configuration {}
@@ -51,7 +61,10 @@ class Bridge extends Application[BridgeConfiguration] {
     bootstrap.addBundle(
       GuiceBundle.builder[BridgeConfiguration]()
         .installers(classOf[ManagedInstaller])
-        .modules(new ActorSystemModule(getName))
+        .modules(
+          new ActorSystemModule(getName),
+          new BridgeActorsModule(),
+          new BridgeConfigModule())
         .extensions(classOf[BridgeApplication])
         .build())
   }

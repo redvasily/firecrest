@@ -6,14 +6,26 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.event.Logging
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
+import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
+import firecrest.BridgeConfiguration
 
-class TcpListener(receiver: ActorRef) extends Actor {
+object TcpListener {
+  trait Factory {
+    def create(receiver: ActorRef): TcpListener
+  }
+}
+
+class TcpListener @Inject() (config: BridgeConfiguration,
+                             @Assisted receiver: ActorRef)
+  extends Actor {
+
   import Tcp._
   import context.system
 
   val log = Logging(context.system, this)
 
-  IO(Tcp) ! Bind(self, new InetSocketAddress("localhost", 9125))
+  IO(Tcp) ! Bind(self, new InetSocketAddress(config.bindHost, config.tcpMessagePort))
 
   override def receive = {
     case b @ Bound(localAddress) =>

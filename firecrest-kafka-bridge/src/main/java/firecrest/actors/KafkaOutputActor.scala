@@ -1,25 +1,31 @@
 package firecrest.actors
 
+import javax.inject.Inject
+
 import akka.actor._
 import akka.stream.scaladsl._
 import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy}
 import akka.util.ByteString
 import com.softwaremill.react.kafka._
+import firecrest.{KafkaConfig, BridgeConfiguration}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.concurrent.duration._
 
-class KafkaOutputActor extends Actor with ActorLogging {
+class KafkaOutputActor @Inject() (config: KafkaConfig) extends Actor
+  with ActorLogging {
+
   implicit val materializer = ActorMaterializer()
 
   import context._
 
   val kafka = new ReactiveKafka()
   val producerProperties = ProducerProperties(
-    bootstrapServers = "localhost:9092",
-    topic = "firecrest-messages",
+    bootstrapServers = s"${config.host}:${config.port}",
+    topic = config.topic,
     valueSerializer = new ByteArraySerializer()
   )
+  log.info(s"Config: $config")
   val producerActorProps: Props = kafka.producerActorProps(producerProperties)
   val kafkaSink = Sink.actorSubscriber(producerActorProps)
   val source = Source.actorRef[ByteString](16, OverflowStrategy.dropNew)

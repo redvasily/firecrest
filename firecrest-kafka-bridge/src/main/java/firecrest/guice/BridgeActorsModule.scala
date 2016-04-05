@@ -1,8 +1,12 @@
 package firecrest.guice
 
-/**
-  * Created by vasily on 05/04/16.
-  */
-class BridgeActorsModule {
+import com.google.inject.AbstractModule
+import com.google.inject.assistedinject.FactoryModuleBuilder
+import firecrest.actors.TcpListener
 
+class BridgeActorsModule extends AbstractModule {
+  override def configure(): Unit = {
+    install(new FactoryModuleBuilder()
+      .build(classOf[TcpListener.Factory]))
+  }
 }

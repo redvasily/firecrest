@@ -1,8 +1,17 @@
 package firecrest.guice
 
-/**
-  * Created by vasily on 05/04/16.
-  */
-class BridgeConfigModule {
+import javax.inject.Singleton
 
+import com.google.inject.{Provides, AbstractModule}
+import firecrest.{KafkaConfig, BridgeConfiguration}
+
+class BridgeConfigModule extends AbstractModule {
+
+  @Provides
+  @Singleton
+  def kafkaConfig(config: BridgeConfiguration): KafkaConfig = {
+    config.kafka
+  }
+
+  override def configure(): Unit = {}
 }

@@ -10,8 +10,10 @@ server:
   - type: http
     port: 9124
 
+bindHost: localhost
 tcpMessagePort: 9125
 
 kafka:
   host: localhost
   port: 9022
+  topic: firecrest-messages
