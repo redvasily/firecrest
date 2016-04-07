@@ -9,3 +9,12 @@ server:
   adminConnectors:
   - type: http
     port: 9127
+
+kafka:
+  host: localhost
+  port: 9022
+  topic: firecrest-messages
+
+elasticSearch:
+  host: localhost
+  port: 9300

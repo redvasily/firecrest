@@ -1,11 +1,14 @@
 package firecrest.actors
 
 import java.net.InetAddress
+import javax.inject.Inject
 
 import akka.actor._
 import akka.stream.scaladsl._
 import akka.stream.{ActorMaterializer, ClosedShape}
+import akkaguiceutils.GuiceUtils
 import com.softwaremill.react.kafka.{ConsumerProperties, ReactiveKafka}
+import firecrest.{ElasticSearchConfig, KafkaConfigIndexer}
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.elasticsearch.client.transport.TransportClient
@@ -13,27 +16,24 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 
 import scala.concurrent.duration._
 
-class KafkaInputActor extends Actor with ActorLogging {
+class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
+                                 elasticSearchConfig: ElasticSearchConfig)
+  extends Actor with ActorLogging with GuiceUtils {
+
   implicit val materializer = ActorMaterializer()
   import context._
 
   val kafka = new ReactiveKafka()
 
   val consumerProperties = ConsumerProperties(
-    bootstrapServers = "localhost:9092",
-    topic = "firecrest-messages",
+    bootstrapServers = s"${kafkaConfig.host}:${kafkaConfig.port}",
+    topic = kafkaConfig.topic,
     groupId = "firecrest-indexer",
     valueDeserializer = new StringDeserializer()
   )
   val consumerActorProps = kafka.consumerActorProps(consumerProperties)
   val kafkaSource = Source
     .actorPublisher[ConsumerRecord[Array[Byte], String]](consumerActorProps)
-
-  val esClient: TransportClient = TransportClient.builder().build()
-    .addTransportAddress(
-      new InetSocketTransportAddress(
-        InetAddress.getByName("localhost"),
-        9300))
 
   val graph = RunnableGraph.fromGraph(GraphDSL.create(kafkaSource) {
     implicit builder =>
@@ -46,8 +46,7 @@ class KafkaInputActor extends Actor with ActorLogging {
         val group = Flow[String].groupedWithin(100, 5000 millis)
         val batchWrap = Flow[Seq[String]].map(lines => EsActorSubscriber.Batch(lines))
         val bcast = builder.add(Broadcast[EsActorSubscriber.Batch](2))
-        val esSink = Sink.actorSubscriber(Props.create(
-          classOf[EsActorSubscriber], esClient))
+        val esSink = Sink.actorSubscriber(props(classOf[EsActorSubscriber]))
 
         // @formatter:off
         source.out ~> extractBody ~> group ~> batchWrap ~> bcast ~> printSink

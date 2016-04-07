@@ -1,5 +1,7 @@
 package firecrest.actors
 
+import javax.inject.Inject
+
 import akka.actor.{Props, Actor, ActorLogging}
 import akka.routing.{RoundRobinRoutingLogic, Router, ActorRefRoutee}
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, MaxInFlightRequestStrategy}
@@ -13,7 +15,8 @@ object EsActorSubscriber {
   case class Done()
 }
 
-class EsActorSubscriber(client: AbstractClient) extends ActorSubscriber with ActorLogging {
+class EsActorSubscriber @Inject() (client: AbstractClient)
+  extends ActorSubscriber with ActorLogging {
 
   import ActorSubscriberMessage._
   import EsActorSubscriber._
