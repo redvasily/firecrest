@@ -11,24 +11,6 @@ import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
 
-class DropwizardScalaModule
-  extends JacksonModule
-    with IteratorModule
-    with EnumerationModule
-    with OptionModule
-    with SeqModule
-    with IterableModule
-    with TupleModule
-    with MapModule
-    with SetModule
-    with UntypedObjectDeserializerModule
-    with EitherModule
-{
-  override def getModuleName = "DropwizardScalaModule"
-}
-
-object DropwizardScalaModule extends DropwizardScalaModule
-
 
 case class KafkaConfig(@JsonProperty(value = "host", required = true)
                        host: String,
