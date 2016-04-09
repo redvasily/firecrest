@@ -20,15 +20,22 @@ class SupervisorActor extends Actor
       ((factory: TcpListener.Factory) => factory.create(kafkaSink)).asJava),
     "listener")
 
+  val graphiteListenerActor = actorOf(
+    props(
+      classOf[UdpGraphiteListener],
+      classOf[UdpGraphiteListener.Factory],
+      ((factory: UdpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
+    "graphiteListener")
+
   override def preStart() = {
-    system.scheduler.scheduleOnce(1000 millis, self, "tick")
+    system.scheduler.scheduleOnce(1 second, self, "tick")
   }
 
   override def postRestart(reason: Throwable) = {}
 
   override def receive: Receive = {
     case "tick" =>
-      system.scheduler.scheduleOnce(3000 millis, self, "tick")
+      system.scheduler.scheduleOnce(10 seconds, self, "tick")
       log.info("Searching")
       self ! context.parent.path
 

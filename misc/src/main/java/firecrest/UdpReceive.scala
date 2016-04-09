@@ -29,6 +29,8 @@ class Listener extends Actor {
   def ready(socket: ActorRef): Receive = {
     case Udp.Received(data, remote) =>
       println(s"Received ${data.utf8String.trim} from $remote")
+      println(s"${remote.getClass}")
+      println(s"${remote.getHostName} ${remote.getHostString}")
     case Udp.Unbind =>
       println("Udp.Unbind")
       socket ! Udp.Unbind

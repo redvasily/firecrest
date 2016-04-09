@@ -28,6 +28,9 @@ class BridgeConfiguration(@JsonProperty(value = "bindHost", required = true)
                           @JsonProperty(value = "tcpMessagePort", required = true)
                           val tcpMessagePort: Int,
 
+                          @JsonProperty(value = "udpGraphitePort", required = true)
+                          val udpGraphitePort: Int,
+
                           @JsonProperty(value="kafka", required = true)
                           val kafka: KafkaConfig)
   extends Configuration {}
