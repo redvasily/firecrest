@@ -1,10 +1,12 @@
 package firecrest.actors
 
+import java.io.IOException
 import javax.inject.Inject
 
 import akka.actor.{Props, Actor, ActorLogging}
 import akka.routing.{RoundRobinRoutingLogic, Router, ActorRefRoutee}
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, MaxInFlightRequestStrategy}
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.elasticsearch.client.support.AbstractClient
 import org.joda.time.DateTime
@@ -97,14 +99,20 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
   }
 
   def indexName(message: String): Option[String] = {
-    val root = mapper.readTree(message)
-    val dateTimeText = root.at(timestampPath).asText()
-    val timestamp = try {
-      Some(DateTime.parse(dateTimeText))
+    val dateTimeText: Option[String] = try {
+      val root = mapper.readTree(message)
+      Some(root.at(timestampPath).asText())
     } catch {
-      case _: IllegalArgumentException =>
+      case _: JsonProcessingException | _: IOException =>
         None
     }
+    val timestamp = dateTimeText flatMap {text =>
+      try {
+        Some(DateTime.parse(text))
+      } catch {
+        case _: IllegalArgumentException =>
+          None
+      }}
     timestamp.map("log-" + indexNameFormatter.print(_))
   }
 }
