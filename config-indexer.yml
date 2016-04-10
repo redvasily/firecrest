@@ -15,6 +15,14 @@ kafka:
   port: 9092
   topic: firecrest-messages
 
+logging:
+  appenders:
+    - type: file
+      currentLogFilename: /var/log/firecrest/indexer.log
+      archivedLogFilenamePattern: /var/log/firecrest/indexer-%d-%i.log.gz
+      archivedFileCount: 10
+      maxFileSize: 50MB
+
 elasticSearch:
   host: localhost
   port: 9300

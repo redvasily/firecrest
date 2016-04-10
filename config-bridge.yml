@@ -10,6 +10,14 @@ server:
   - type: http
     port: 9124
 
+logging:
+  appenders:
+    - type: file
+      currentLogFilename: /var/log/firecrest/bridge.log
+      archivedLogFilenamePattern: /var/log/firecrest/bridge-%d-%i.log.gz
+      archivedFileCount: 10
+      maxFileSize: 50MB
+
 bindHost: localhost
 tcpMessagePort: 9125
 udpGraphitePort: 9125
