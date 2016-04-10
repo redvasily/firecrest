@@ -1,7 +1,7 @@
 package firecrest
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import firecrest.guice.IndexerConfigModule
+import firecrest.guice.{ElasticSearchClientModule, IndexerConfigModule}
 import io.dropwizard.setup.{Bootstrap, Environment}
 import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
@@ -43,7 +43,8 @@ class Indexer extends Application[IndexerConfiguration] {
         .installers(classOf[ManagedInstaller])
         .modules(
           new ActorSystemModule(getName),
-          new IndexerConfigModule())
+          new IndexerConfigModule(),
+          new ElasticSearchClientModule())
         .extensions(classOf[IndexerApplication])
         .build())
   }

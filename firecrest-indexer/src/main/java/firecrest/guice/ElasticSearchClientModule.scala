@@ -1,24 +1,26 @@
 package firecrest.guice
 
 import java.net.InetAddress
-import javax.inject.Inject
+import javax.inject.{Singleton, Inject}
 
-import com.google.inject.AbstractModule
+import com.google.inject.{Provides, AbstractModule}
 import firecrest.ElasticSearchConfig
 import org.elasticsearch.client.support.AbstractClient
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 
-class ElasticSearchClientModule @Inject() (esConfig: ElasticSearchConfig)
-  extends AbstractModule {
+class ElasticSearchClientModule extends AbstractModule {
 
-  override def configure(): Unit = {
+  @Provides
+  @Singleton
+  def client(esConfig: ElasticSearchConfig): AbstractClient = {
     val esClient: TransportClient = TransportClient.builder().build()
       .addTransportAddress(
         new InetSocketTransportAddress(
           InetAddress.getByName(esConfig.host),
           esConfig.port))
-
-    bind(classOf[AbstractClient]).toInstance(esClient)
+    esClient
   }
+
+  override def configure(): Unit = {}
 }
