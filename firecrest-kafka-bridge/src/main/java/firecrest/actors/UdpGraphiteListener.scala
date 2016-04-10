@@ -57,7 +57,7 @@ class UdpGraphiteListener @Inject() (config: BridgeConfiguration,
       parseMessage(data) match {
         case Some(graphiteMessage) =>
           log.info(s"Processing a following graphite message: $graphiteMessage")
-          val formatted = formatMessage(graphiteMessage, remote.getHostString)
+          val formatted = formatMessage(graphiteMessage, remote.getHostName)
           log.info(s"Formatted message: $formatted")
           receiver ! formatted
         case _ =>
