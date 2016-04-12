@@ -27,6 +27,13 @@ class SupervisorActor extends Actor
       ((factory: UdpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
     "graphiteListener")
 
+  val graphiteListenerTcpActor = actorOf(
+    props(
+      classOf[TcpGraphiteListener],
+      classOf[TcpGraphiteListener.Factory],
+      ((factory: TcpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
+    "graphiteListenerTcp")
+
   override def preStart() = {
     system.scheduler.scheduleOnce(1 second, self, "tick")
   }

@@ -20,6 +20,7 @@ logging:
 
 bindHost: localhost
 tcpMessagePort: 9125
+tcpGraphitePort: 9126
 udpGraphitePort: 9125
 
 kafka:
