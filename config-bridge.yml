@@ -17,6 +17,11 @@ logging:
       archivedLogFilenamePattern: /var/log/firecrest/bridge-%d-%i.log.gz
       archivedFileCount: 10
       maxFileSize: 50MB
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+#      logFormat: # TODO
 
 bindHost: localhost
 tcpMessagePort: 9125
