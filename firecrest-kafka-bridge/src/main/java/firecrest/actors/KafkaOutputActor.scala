@@ -28,7 +28,7 @@ class KafkaOutputActor @Inject() (config: KafkaConfig) extends Actor
   log.info(s"Config: $config")
   val producerActorProps: Props = kafka.producerActorProps(producerProperties)
   val kafkaSink = Sink.actorSubscriber(producerActorProps)
-  val source = Source.actorRef[ByteString](16, OverflowStrategy.dropNew)
+  val source = Source.actorRef[ByteString](65536, OverflowStrategy.dropNew)
 
   val graph = RunnableGraph.fromGraph(GraphDSL.create(source, kafkaSink)((_, _)) {
     implicit builder =>
