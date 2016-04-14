@@ -1,6 +1,7 @@
 package firecrest.actors
 
 import java.net.InetAddress
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 import akka.actor._
@@ -25,15 +26,27 @@ class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
 
   val kafka = new ReactiveKafka()
 
-  val consumerProperties = ConsumerProperties(
-    bootstrapServers = s"${kafkaConfig.host}:${kafkaConfig.port}",
-    topic = kafkaConfig.topic,
-    groupId = "firecrest-indexer",
-    valueDeserializer = new StringDeserializer()
-  )
-  val consumerActorProps = kafka.consumerActorProps(consumerProperties)
-  val kafkaSource = Source
-    .actorPublisher[ConsumerRecord[Array[Byte], String]](consumerActorProps)
+//  val consumerProperties = ConsumerProperties(
+//    bootstrapServers = s"${kafkaConfig.host}:${kafkaConfig.port}",
+//    topic = kafkaConfig.topic,
+//    groupId = "firecrest-indexer",
+//    valueDeserializer = new StringDeserializer())
+//    .setProperty("enable.auto.commit", "true")
+//    .setProperty("auto.offset.reset", "latest")
+//    .setProperty("heartbeat.interval.ms", "1000")
+//    .setProperty("request.timeout.ms", "60000")
+////    .setProperties("session.timeout.ms")
+//    .setProperty("fetch.max.wait.ms", "10000")
+//    .commitInterval(100 millis)
+
+  val consumerProperties = props(classOf[KafkaActorPublisher])
+
+  log.info(s"Consumer properties: $consumerProperties")
+
+  val consumerActorProps = props(classOf[KafkaActorPublisher])
+  val kafkaSource = Source.actorPublisher[String](consumerActorProps)
+
+  val batchId = new AtomicLong()
 
   val graph = RunnableGraph.fromGraph(GraphDSL.create(kafkaSource) {
     implicit builder =>
@@ -41,16 +54,17 @@ class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
         import GraphDSL.Implicits._
 
         val printSink = Sink.foreach[AnyRef](line => println(s"Received: $line"))
-        val extractBody = Flow[ConsumerRecord[Array[Byte], String]]
-          .map(record => record.value())
+//        val extractBody = Flow[ConsumerRecord[Array[Byte], String]]
+//          .map(record => record.value())
         val group = Flow[String].groupedWithin(100, 5000 millis)
-        val batchWrap = Flow[Seq[String]].map(lines => EsActorSubscriber.Batch(lines))
-        val bcast = builder.add(Broadcast[EsActorSubscriber.Batch](2))
+        val batchWrap = Flow[Seq[String]].map(lines =>
+          EsActorSubscriber.Batch(batchId.incrementAndGet(), lines)
+        )
+//        val bcast = builder.add(Broadcast[EsActorSubscriber.Batch](2))
         val esSink = Sink.actorSubscriber(props(classOf[EsActorSubscriber]))
 
         // @formatter:off
-        source.out ~> extractBody ~> group ~> batchWrap ~> bcast ~> printSink
-                                                           bcast ~> esSink
+        source.out ~> group ~> batchWrap ~> esSink
         // @formatter:on
 
         ClosedShape
