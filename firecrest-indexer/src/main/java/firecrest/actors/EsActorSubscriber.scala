@@ -13,7 +13,12 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
 object EsActorSubscriber {
-  case class Batch(messages: Seq[String])
+  case class Batch(id: Long, messages: Seq[String]) {
+    override def toString(): String = {
+      s"Batch{id=$id, length=${messages.size}, head=${messages.head}"
+
+    }
+  }
   case class Done()
 }
 
@@ -42,7 +47,7 @@ class EsActorSubscriber @Inject() (client: AbstractClient)
   }
 
   override def receive = {
-    case msg @ OnNext(Batch(messages)) =>
+    case msg : OnNext =>
       val batch = msg.element.asInstanceOf[Batch]
       activeRequests += 1
       log.info(s"Sending a request to a worker: $batch. activeRequests: $activeRequests")
@@ -69,14 +74,14 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
   }
 
   override def receive = {
-    case Batch(messages) =>
+    case batch: Batch =>
 
-      log.info("Processing a batch")
+      log.info(s"Processing a batch: $batch")
 
       try {
         val bulkRequest = client.prepareBulk()
 
-        for (msg <- messages) {
+        for (msg <- batch.messages) {
           indexName(msg) match {
             case Some(index) =>
               bulkRequest.add(client
