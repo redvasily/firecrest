@@ -22,6 +22,10 @@ logging:
       archivedLogFilenamePattern: /var/log/firecrest/indexer-%d-%i.log.gz
       archivedFileCount: 10
       maxFileSize: 50MB
+    - type: console
+#      threshold: ALL
+#      timeZone: UTC
+      target: stdout
 
 elasticSearch:
   host: localhost
