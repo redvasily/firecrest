@@ -3,7 +3,7 @@ package firecrest.actors
 import java.util.Properties
 import javax.inject.Inject
 
-import akka.actor.{Actor, Props, ActorRef, ActorLogging}
+import akka.actor._
 import akka.stream.actor.ActorPublisher
 import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
 import firecrest.{actors, KafkaConfigIndexer}
@@ -15,8 +15,6 @@ import scala.annotation.tailrec
 
 object KafkaActorPublisher {
   case class Batch(messages: Seq[String])
-  case class Stop()
-  case class Resume()
 }
 
 class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
@@ -25,9 +23,55 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
   import KafkaActorPublisher._
   import context._
 
+  val props = new Properties()
+  props.put("bootstrap.servers", s"${kafkaConfig.host}:${kafkaConfig.port}")
+  props.put("group.id", "test")
+  props.put("enable.auto.commit", "false")
+  props.put("auto.commit.interval.ms", "1000")
+  props.put("session.timeout.ms", "30000")
+  props.put(
+    "key.deserializer",
+    "org.apache.kafka.common.serialization.StringDeserializer")
+  props.put(
+    "value.deserializer",
+    "org.apache.kafka.common.serialization.StringDeserializer")
+  val consumer = new KafkaConsumer[String, String](props)
+  consumer.subscribe(Vector(kafkaConfig.topic))
+
+  def startReader(): ActorRef = {
+    val reader = actorOf(Props.create(classOf[KafkaReader], consumer))
+    watch(reader)
+    reader
+  }
+
+  override def postStop(): Unit = {
+    super.postStop()
+    consumer.close()
+  }
+
   val maxBufferSize = 1024
   var buffer = Vector.empty[String]
-  val reader: ActorRef = actorOf(Props.create(classOf[KafkaReader], kafkaConfig))
+
+  var reader  = startReader()
+  var readerAlive = true
+  var wantReaderAlive = true
+  var stopSent = false
+
+  def controlReader() = {
+    if (!wantReaderAlive && !stopSent) {
+      log.info("Stopping a reader")
+      // want it stopped, but the stop hasn't been sent
+      stop(reader)
+      stopSent = true
+    }
+    if (!readerAlive && wantReaderAlive) {
+      // it's dead, but we want a new one
+      log.info("Starting a reader")
+      reader = startReader()
+      readerAlive = true
+      stopSent = false
+    }
+  }
 
   override def receive = {
     case Batch(messages) =>
@@ -35,12 +79,17 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
       buffer = buffer ++ messages
       deliverBuf()
       if (buffer.size >= maxBufferSize) {
-        reader ! Stop()
+        wantReaderAlive = false
+        controlReader()
       }
       log.info(s"Buffer size: ${buffer.size}")
 
     case Request(_) =>
       deliverBuf()
+
+    case terminated: Terminated =>
+      readerAlive = false
+      controlReader()
 
     case Cancel =>
       context.stop(self)
@@ -48,7 +97,10 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
 
   @tailrec final def deliverBuf(): Unit = {
 
-    def maybeResume() = if (buffer.size <= maxBufferSize / 2) { reader ! Resume() }
+    def maybeResume() = if (buffer.size <= maxBufferSize / 2) {
+      wantReaderAlive = true
+      controlReader()
+    }
 
     if (totalDemand > 0) {
       if (totalDemand <= Int.MaxValue) {
@@ -75,38 +127,21 @@ object KafkaReader {
   case class Tick()
 }
 
-class KafkaReader(kafkaConfig: KafkaConfigIndexer) extends Actor with ActorLogging {
+class KafkaReader(consumer: KafkaConsumer[String, String])
+  extends Actor with ActorLogging {
 
   import KafkaActorPublisher._
   import KafkaReader._
   import context._
 
-  var active = true
-
-  val props = new Properties()
-  props.put("bootstrap.servers", s"${kafkaConfig.host}:${kafkaConfig.port}")
-  props.put("group.id", "test")
-  props.put("enable.auto.commit", "false")
-  props.put("auto.commit.interval.ms", "1000")
-  props.put("session.timeout.ms", "30000")
-  props.put(
-    "key.deserializer",
-    "org.apache.kafka.common.serialization.StringDeserializer")
-  props.put(
-    "value.deserializer",
-    "org.apache.kafka.common.serialization.StringDeserializer")
-  val consumer = new KafkaConsumer[String, String](props)
-  consumer.subscribe(Vector(kafkaConfig.topic))
-
-  override def preStart() = {
-    system.scheduler.scheduleOnce(1 second, self, Tick())
-  }
-
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    log.error(reason, s"Kafka reader error: $message")
     log.info("Closing a consumer")
-    consumer.close()
+  }
+
+  override def preStart(): Unit = {
+    super.preStart()
+    self ! Tick()
   }
 
   override def postRestart(reason: Throwable) = {
@@ -114,34 +149,18 @@ class KafkaReader(kafkaConfig: KafkaConfigIndexer) extends Actor with ActorLoggi
   }
 
   override def receive = {
-    case Stop() =>
-      active = false
-      log.info("Stopping consumption")
-
-    case Resume() =>
-      log.info("Resuming consumption")
-      if (!active) {
-        self ! Tick()
-      }
-      active = true
-
     case Tick() =>
+      self ! Tick()
       //      log.info("Reading from kafka")
-      if (active) {
-        val records = consumer.poll(100)
+      val records = consumer.poll(100)
+      if (records.count() > 0) {
         log.info(s"Got ${records.count()} records")
-        if (records.count() > 0) {
-          self ! Tick()
-        } else {
-          //        log.info("The last batch was empty. Waiting a bit")
-          system.scheduler.scheduleOnce(1 second, self, Tick())
-        }
         consumer.commitSync()
         log.info("Committed positions")
-        val messages = records.map(record => record.value()).toVector
-        if (messages.nonEmpty) {
-          parent ! Batch(messages)
-        }
+      }
+      val messages = records.map(record => record.value()).toVector
+      if (messages.nonEmpty) {
+        parent ! Batch(messages)
       }
   }
 
