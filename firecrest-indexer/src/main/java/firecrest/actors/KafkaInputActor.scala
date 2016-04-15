@@ -56,7 +56,7 @@ class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
         val printSink = Sink.foreach[AnyRef](line => println(s"Received: $line"))
 //        val extractBody = Flow[ConsumerRecord[Array[Byte], String]]
 //          .map(record => record.value())
-        val group = Flow[String].groupedWithin(100, 5000 millis)
+        val group = Flow[String].groupedWithin(10000, 5000 millis)
         val batchWrap = Flow[Seq[String]].map(lines =>
           EsActorSubscriber.Batch(batchId.incrementAndGet(), lines)
         )
@@ -64,7 +64,7 @@ class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
         val esSink = Sink.actorSubscriber(props(classOf[EsActorSubscriber]))
 
         // @formatter:off
-        source.out ~> group ~> batchWrap ~> esSink
+        source.out ~> group ~> batchWrap ~> esSink.async
         // @formatter:on
 
         ClosedShape
