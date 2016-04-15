@@ -5,6 +5,7 @@ import javax.inject.Inject
 
 import akka.actor.{Actor, Props, ActorRef, ActorLogging}
 import akka.stream.actor.ActorPublisher
+import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
 import firecrest.{actors, KafkaConfigIndexer}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import scala.concurrent.duration._
@@ -36,6 +37,13 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
       if (buffer.size >= maxBufferSize) {
         reader ! Stop()
       }
+      log.info(s"Buffer size: ${buffer.size}")
+
+    case Request(_) =>
+      deliverBuf()
+
+    case Cancel =>
+      context.stop(self)
   }
 
   @tailrec final def deliverBuf(): Unit = {
@@ -46,13 +54,15 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
       if (totalDemand <= Int.MaxValue) {
         val (use, keep) = buffer.splitAt(totalDemand.toInt)
         buffer = keep
-        use.foreach(msg => log.info(s"Sending: $msg"))
+        //        use.foreach(msg => log.info(s"Sending: $msg"))
+        log.info(s"use: ${use.size} keep: ${keep.size}")
         use.foreach(onNext)
         maybeResume()
       } else {
         val (use, keep) = buffer.splitAt(Int.MaxValue)
         buffer = keep
-        use.foreach(msg => log.info(s"Sending: $msg"))
+        log.info(s"use: ${use.size} keep: ${keep.size}")
+        //        use.foreach(msg => log.info(s"Sending: $msg"))
         use.foreach(onNext)
         maybeResume()
         deliverBuf()
@@ -92,9 +102,15 @@ class KafkaReader(kafkaConfig: KafkaConfigIndexer) extends Actor with ActorLoggi
     system.scheduler.scheduleOnce(1 second, self, Tick())
   }
 
-  override def postRestart(reason: Throwable) = {
+  override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
+    super.preRestart(reason, message)
+    log.error(reason, s"Kafka reader error: $message")
     log.info("Closing a consumer")
     consumer.close()
+  }
+
+  override def postRestart(reason: Throwable) = {
+    // overridden to avoid sending a message to itself
   }
 
   override def receive = {
@@ -110,20 +126,23 @@ class KafkaReader(kafkaConfig: KafkaConfigIndexer) extends Actor with ActorLoggi
       active = true
 
     case Tick() =>
-      log.info("Reading from kafka")
-      val records = consumer.poll(100)
-      log.info(s"Got ${records.count()} records")
-      if (records.count() > 0) {
-        self ! Tick()
-      } else {
-        log.info("The last batch was empty. Waiting a bit")
-        system.scheduler.scheduleOnce(1 second, self, Tick())
-      }
-      consumer.commitSync()
-      log.info("Committed positions")
-      val messages = records.map(record => record.value()).toVector
-      if (messages.nonEmpty) {
-        parent ! Batch(messages)
+      //      log.info("Reading from kafka")
+      if (active) {
+        val records = consumer.poll(100)
+        log.info(s"Got ${records.count()} records")
+        if (records.count() > 0) {
+          self ! Tick()
+        } else {
+          //        log.info("The last batch was empty. Waiting a bit")
+          system.scheduler.scheduleOnce(1 second, self, Tick())
+        }
+        consumer.commitSync()
+        log.info("Committed positions")
+        val messages = records.map(record => record.value()).toVector
+        if (messages.nonEmpty) {
+          parent ! Batch(messages)
+        }
       }
   }
+
 }
