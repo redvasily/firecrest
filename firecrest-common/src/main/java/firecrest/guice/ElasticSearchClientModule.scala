@@ -1,9 +1,9 @@
 package firecrest.guice
 
 import java.net.InetAddress
-import javax.inject.{Singleton, Inject}
+import javax.inject.Singleton
 
-import com.google.inject.{Provides, AbstractModule}
+import com.google.inject.{AbstractModule, Provides}
 import firecrest.ElasticSearchConfig
 import org.elasticsearch.client.support.AbstractClient
 import org.elasticsearch.client.transport.TransportClient

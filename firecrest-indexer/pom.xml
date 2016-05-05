@@ -162,11 +162,6 @@
       <version>19.0</version>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>2.3.1</version>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-scala_2.11</artifactId>
       <version>2.6.3</version>

@@ -24,7 +24,10 @@ class BridgeConfiguration(@JsonProperty(value = "bindHost", required = true)
                           val tcpGraphitePort: Int,
 
                           @JsonProperty(value="kafka", required = true)
-                          val kafka: KafkaConfiguration)
+                          val kafka: KafkaConfiguration,
+
+                          @JsonProperty(value = "elasticSearch", required = true)
+                          val elasticSearch: ElasticSearchConfig)
   extends Configuration {}
 
 class Bridge extends Application[BridgeConfiguration] {

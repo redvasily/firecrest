@@ -110,5 +110,10 @@
       <artifactId>jackson-module-scala_2.11</artifactId>
       <version>2.6.3</version>
     </dependency>
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>2.3.1</version>
+    </dependency>
   </dependencies>
 </project>

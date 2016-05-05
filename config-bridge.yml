@@ -32,3 +32,7 @@ kafka:
   host: localhost
   port: 9092
   topic: firecrest-messages
+
+elasticSearch:
+  host: localhost
+  port: 9300
