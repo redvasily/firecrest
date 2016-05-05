@@ -3,7 +3,7 @@ package firecrest.guice
 import javax.inject.Singleton
 
 import com.google.inject.{Provides, AbstractModule}
-import firecrest.{ElasticSearchConfig, KafkaConfigIndexer, IndexerConfiguration}
+import firecrest.{ElasticSearchConfig, KafkaConfiguration, IndexerConfiguration}
 
 class IndexerConfigModule extends AbstractModule {
 
@@ -15,7 +15,7 @@ class IndexerConfigModule extends AbstractModule {
 
   @Provides
   @Singleton
-  def kafkaConfig(config: IndexerConfiguration): KafkaConfigIndexer = {
+  def kafkaConfig(config: IndexerConfiguration): KafkaConfiguration = {
     config.kafka
   }
 

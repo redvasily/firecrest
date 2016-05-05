@@ -7,24 +7,8 @@ import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
 
-
-case class KafkaConfigIndexer(@JsonProperty(value = "host", required = true)
-                              host: String,
-
-                              @JsonProperty(value = "port", required = true)
-                              port: Int,
-
-                              @JsonProperty(value = "topic", required = true)
-                              topic: String = "firecrest-messages")
-
-case class ElasticSearchConfig(@JsonProperty(value = "host", required = true)
-                               host: String,
-
-                               @JsonProperty(value = "port", required = true)
-                               port: Int)
-
 class IndexerConfiguration(@JsonProperty(value = "kafka", required = true)
-                           val kafka: KafkaConfigIndexer,
+                           val kafka: KafkaConfiguration,
 
                            @JsonProperty(value = "elasticSearch", required = true)
                            val elasticSearch: ElasticSearchConfig)

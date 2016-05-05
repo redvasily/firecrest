@@ -7,12 +7,12 @@ import akka.stream.scaladsl._
 import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy}
 import akka.util.ByteString
 import com.softwaremill.react.kafka._
-import firecrest.{KafkaConfig, BridgeConfiguration}
+import firecrest.{KafkaConfiguration, BridgeConfiguration}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.concurrent.duration._
 
-class KafkaOutputActor @Inject() (config: KafkaConfig) extends Actor
+class KafkaOutputActor @Inject() (config: KafkaConfiguration) extends Actor
   with ActorLogging {
 
   implicit val materializer = ActorMaterializer()

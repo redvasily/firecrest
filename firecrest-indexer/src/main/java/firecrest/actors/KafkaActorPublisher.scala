@@ -6,7 +6,7 @@ import javax.inject.Inject
 import akka.actor._
 import akka.stream.actor.ActorPublisher
 import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
-import firecrest.{actors, KafkaConfigIndexer}
+import firecrest.{KafkaConfiguration, actors}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
@@ -17,7 +17,7 @@ object KafkaActorPublisher {
   case class Batch(messages: Seq[String])
 }
 
-class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfigIndexer)
+class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfiguration)
   extends ActorPublisher[String] with ActorLogging {
 
   import KafkaActorPublisher._

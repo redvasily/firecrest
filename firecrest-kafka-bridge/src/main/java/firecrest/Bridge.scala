@@ -11,17 +11,6 @@ import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
 
-
-case class KafkaConfig(@JsonProperty(value = "host", required = true)
-                       host: String,
-
-                       @JsonProperty(value = "port", required = true)
-                       port: Int,
-
-                       @JsonProperty(value = "topic", required = true)
-                       topic: String = "firecrest-messages")
-
-
 class BridgeConfiguration(@JsonProperty(value = "bindHost", required = true)
                           val bindHost: String,
 
@@ -35,7 +24,7 @@ class BridgeConfiguration(@JsonProperty(value = "bindHost", required = true)
                           val tcpGraphitePort: Int,
 
                           @JsonProperty(value="kafka", required = true)
-                          val kafka: KafkaConfig)
+                          val kafka: KafkaConfiguration)
   extends Configuration {}
 
 class Bridge extends Application[BridgeConfiguration] {

@@ -9,7 +9,7 @@ import akka.stream.scaladsl._
 import akka.stream.{ActorMaterializer, ClosedShape}
 import akkaguiceutils.GuiceUtils
 import com.softwaremill.react.kafka.{ConsumerProperties, ReactiveKafka}
-import firecrest.{ElasticSearchConfig, KafkaConfigIndexer}
+import firecrest.{KafkaConfiguration, ElasticSearchConfig}
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.elasticsearch.client.transport.TransportClient
@@ -17,7 +17,7 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 
 import scala.concurrent.duration._
 
-class KafkaInputActor @Inject() (kafkaConfig: KafkaConfigIndexer,
+class KafkaInputActor @Inject() (kafkaConfig: KafkaConfiguration,
                                  elasticSearchConfig: ElasticSearchConfig)
   extends Actor with ActorLogging with GuiceUtils {
 
