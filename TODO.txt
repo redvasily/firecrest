@@ -1,4 +1,4 @@
-[ ] Add automatic uploading of mapping templates to the kafka-bridge
+[✔] Add automatic uploading of mapping templates to the kafka-bridge
 
 [ ] Add support for logstash-formatted messages
 
