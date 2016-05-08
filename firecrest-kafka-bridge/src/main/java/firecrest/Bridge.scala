@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.scala._
 import com.fasterxml.jackson.module.scala.deser.{UntypedObjectDeserializerModule, ScalaNumberDeserializersModule}
 import com.fasterxml.jackson.module.scala.introspect.ScalaAnnotationIntrospectorModule
 import com.fasterxml.jackson.module.scala.modifiers.EitherModule
-import firecrest.guice.{BridgeConfigModule, BridgeActorsModule}
+import firecrest.guice.{ElasticSearchClientModule, BridgeConfigModule, BridgeActorsModule}
 import io.dropwizard.setup.{Bootstrap, Environment}
 import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
@@ -44,7 +44,8 @@ class Bridge extends Application[BridgeConfiguration] {
         .modules(
           new ActorSystemModule(getName),
           new BridgeActorsModule(),
-          new BridgeConfigModule())
+          new BridgeConfigModule(),
+          new ElasticSearchClientModule())
         .extensions(classOf[BridgeApplication])
         .build())
   }

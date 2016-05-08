@@ -34,6 +34,8 @@ class SupervisorActor extends Actor
       ((factory: TcpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
     "graphiteListenerTcp")
 
+  val templateUploadActor = actorOf(props(classOf[TemplateUploadActor]))
+
   override def preStart() = {
     system.scheduler.scheduleOnce(1 second, self, "tick")
   }
