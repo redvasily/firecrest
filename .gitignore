@@ -2,4 +2,5 @@
 target/
 *.iml
 dependency-reduced-pom.xml
+.vagrant/*
 
