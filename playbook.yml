@@ -1,0 +1,89 @@
+---
+- hosts: all
+  user: vagrant
+  sudo: yes
+  vars:
+    static_ip: 192.168.13.37
+    kafka_dir: /usr/opt/kafka/kafka_2.11-0.9.0.1
+
+  tasks:
+    - name: Install htop
+      apt: name='htop' state=present update_cache=yes cache_valid_time=86400
+
+    - name: Install runit
+      apt: name='runit' state=present update_cache=yes cache_valid_time=86400
+
+    - apt: name=apt-transport-https state=present update_cache=yes cache_valid_time=86400
+
+    - name: Add elasticsearch repository key
+      apt_key: id=D88E42B4 url=https://packages.elastic.co/GPG-KEY-elasticsearch state=present
+
+    - name: Add elasticsearch repository
+      apt_repository: repo='deb https://packages.elastic.co/elasticsearch/2.x/debian stable main' state=present
+
+    - name: Add jessie backports
+      apt_repository: repo='deb http://ftp.de.debian.org/debian jessie-backports main' state=present
+
+    - name: Install java8
+      apt: name='openjdk-8-jdk' state=present update_cache=yes cache_valid_time=86400
+
+    - name: Install zookeeperd
+      apt: name='zookeeperd' state=present update_cache=yes cache_valid_time=86400
+
+    - name: Start zookeeper
+      service: name='zookeeper' state='started'
+
+    - name: Check if kafka directory exists
+      stat: path=/usr/opt/kafka/done
+      register: kafka
+
+    - name: Download kafka
+      get_url: url='http://www-us.apache.org/dist/kafka/0.9.0.1/kafka_2.11-0.9.0.1.tgz' dest='/tmp/kafka_2.11-0.9.0.1.tgz' sha256sum='db28f4d5a9327711013c26632baed8e905ce2f304df89a345f25a6dfca966c7a'
+      when: kafka.stat.exists == False
+
+    - name: Create kafka directory
+      file: path=/usr/opt/kafka state=directory
+
+    - name: Extract kafka archive
+      unarchive: src='/tmp/kafka_2.11-0.9.0.1.tgz' dest='/usr/opt/kafka' copy=no
+      when: kafka.stat.exists == False
+
+    - name: Clean up a kafka archive
+      file: path=/tmp/kafka_2.11-0.9.0.1.tgz state=absent
+
+    - file: path=/usr/opt/kafka/done state=touch
+      when: kafka.stat.exists == False
+
+    - file: path=/etc/service/kafka state=directory
+
+    - name: uncomment and set advertised.host.name
+      lineinfile: dest="{{ kafka_dir }}/config/server.properties"
+                  insertafter='^#advertised.host.name=<hostname routable by clients>'
+                  line='advertised.host.name={{ static_ip }}'
+                  state=present
+
+    - template: src=kafka.run dest=/etc/service/kafka/run mode=0755
+
+    - name: Check if 'firecrest-messages' topic exists
+      stat: path=/usr/opt/kafka/firecrest-messages
+      register: firecrest_messages
+
+    - name: Create 'firecrest-messages' topic
+      shell: "sleep 5 && {{ kafka_dir }}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic firecrest-messages"
+      when: firecrest_messages.stat.exists == False
+
+    - name: Mark that 'firecrest-mesages' topic has been created
+      file: path=/usr/opt/kafka/firecrest-messages state=touch
+      when: firecrest_messages.stat.exists == False
+
+    - name: Install elasticsearch
+      apt: name=elasticsearch=2.3.2 state=present update_cache=yes cache_valid_time=86400
+      register: elasticsearch
+
+    - name: Reload systemctl
+      shell: /bin/systemctl daemon-reload
+      when: elasticsearch.changed == True
+
+    - name: Enable elasticsearch service
+      shell: /bin/systemctl enable elasticsearch.service
+      when: elasticsearch.changed == True

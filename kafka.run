@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec {{ kafka_dir }}/bin/kafka-server-start.sh {{ kafka_dir }}/config/server.properties
