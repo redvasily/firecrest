@@ -57,3 +57,58 @@ With such architecture, reliability of the whole system is the same as reliabili
 which means that the whole system is very reliable. A temporary downtime of Elasticsearch
 will not lead to loss of data.
 
+Building firecrest
+==================
+
+::
+
+    mvn clean package
+
+Usage
+=====
+
+To use firecrest you need Kafka and Elasticsearch. The easiest way to get started is by
+setting up a VM with all dependencies via vagrant, you can do this by running::
+
+    $ vagrant up
+
+It will configure a debian jessie machine running on a private network with an IP address
+192.168.13.37 with kafka and elasticsearch listening on standard ports:
+9092 for kakfa, and 9300 for elasticsearch.
+
+Now you can start a firecrest bridge::
+
+    $ java -jar firecrest-kafka-bridge-0.1-SNAPSHOT.jar server config-bridge.yml
+
+and an indexer::
+
+    $ java -jar firecrest-indexer-0.1-SNAPSHOT.jar server config-indexer.yml
+
+You can change different parameters in config-bridge.yml and config-indexer.yml.
+
+By default firecrest-bridge listens for graphite-compatible metrics data on TCP port 9126 and
+for logstash compatible json-formatted log data on TCP port 9125.
+
+Sending logs and metrics from Dropwizard apps
+---------------------------------------------
+
+If you are using Dropwizard you can send metrics data to firecrest-bridge via
+dropwizard-metrics-graphite plugin, by putting this into your config file::
+
+    config goes here
+
+You can send Dropwizard logs to firecrest-bridge by using ``package name here`` package and putting this into your
+configuration file::
+
+    config goes here
+
+Accessing logs and metrics
+--------------------------
+
+Firecrest-indexer will make will put data into elasticsearch and will make sure that a correct mapping is used.
+To access indexed data you can use standard tools such as Kibana and Grafana.
+
+
+
+
+
