@@ -87,3 +87,6 @@
     - name: Enable elasticsearch service
       shell: /bin/systemctl enable elasticsearch.service
       when: elasticsearch.changed == True
+
+    - name: Start Elasticsearch
+      service: name='elasticsearch' state='started'
