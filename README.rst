@@ -1,24 +1,22 @@
 =========
-firecrest
+Firecrest
 =========
 
 Overview
 ========
 
-Firecrest is a reliable logs / metrics management system built on top of Kafka / Elasticsearch.
+Firecrest is a reliable logs/metrics management system built on top of Kafka / Elasticsearch.
 
 
 Motivation
 ==========
 
-It's essential to have access to your system's logs/metrics with reach search capability.
-Logstash provides a nice set of features, however it has some problems with stability and
-exhibits some weird performance problems from time to time.
+It's essential to have access to your system's logs/metrics with rich search capability.
+There are several existing systems aiming to solve this goal (Logstash being the most prominent),
+however they didn't work sufficiently well for my use-cases.
 
-After having been let down by Logstash several times, I've decided to write a reliable Logstash
-"replacement". Firecrest is not aiming to provide all of the features of Logstash, but to
-provide a subset of features that is useful in a modern mircoservice-oriented tech stack,
-while being as hassle-free as possible.
+Firecrest is aiming to reliably provide a small cohesive set of features useful in a
+modern mircoservice-oriented tech stack, while being as hassle-free as possible.
 
 
 Architecture
@@ -27,30 +25,29 @@ Architecture
 ::
 
     logs      +-----------+                     +-----------+
-    --------> |           |      +-------+      |           |       +--------------+
-              | Firecrest |      |       |      | Firecrest |       |              |
-              |  bridge   | ---> | Kafka | ---> |  indexer  | ----> | Elasicsearch |
-    metrics   |           |      |       |      |           |       |              |
-    --------> |           |      +-------+      +-----------+       +--------------+
+    --------> |           |      +-------+      |           |       +---------------+
+              | Firecrest |      |       |      | Firecrest |       |               |
+              |  bridge   | ---> | Kafka | ---> |  indexer  | ----> | Elasticsearch |
+    metrics   |           |      |       |      |           |       |               |
+    --------> |           |      +-------+      +-----------+       +---------------+
               +-----------+
 
 
 Firecrest is written in Scala/Akka, using supervisors through the whole system. Such
-architecture common for Erlang applications has proven itself to be extremely reliable,
-so I hope it will server here as well.
+architecture is common for Erlang applications and has proven itself to be extremely reliable.
 
-Bridge provides accepts different log and metrics data over simple TCP/UDP, converts
-formats, repacks and put them into Kafka.
+The bridge accepts different log and metrics data over simple TCP/UDP, converts
+formats, repacks and puts them into Kafka.
 
 Kafka is necessary to provide reliability in case of a temporary log storage
 subsystem (Elasticsearch) problems / downtime (out of memory, upgrade etc).
 
-Bridge saves clients from having to implement Kafka protocol details or from having to depend on
-Kafka client libraries. At the moment bridge accepts graphite compatible metrics data over TCP and UDP
+The bridge saves clients from having to implement Kafka protocol details or from having to depend on
+Kafka client libraries. At the moment the bridge accepts graphite compatible metrics data over TCP and UDP
 and Logstash compatible json log data over TCP. Such json log data can be produced for instance by
 logstash-logback-encoder_.
 
-Indexer simply takes already formatted and prepared data from kafka and stores it into
+The indexer simply takes already formatted and prepared data from kafka and stores it into
 Elasticsearch.
 
 With such architecture, reliability of the whole system is the same as reliability of Kafka,
