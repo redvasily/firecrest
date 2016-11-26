@@ -9,7 +9,7 @@
 
   <parent>
     <groupId>firecrest</groupId>
-    <artifactId>firecrest</artifactId>
+    <artifactId>firecrest-main</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
 

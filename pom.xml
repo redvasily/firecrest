@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>firecrest</groupId>
-  <artifactId>firecrest</artifactId>
+  <artifactId>firecrest-main</artifactId>
   <packaging>pom</packaging>
   <version>0.1-SNAPSHOT</version>
   <name>Firecrest</name>
