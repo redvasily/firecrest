@@ -12,10 +12,7 @@
 
   <modules>
     <module>akka-guice-utils</module>
-    <module>misc</module>
-    <module>firecrest-common</module>
-    <module>firecrest-kafka-bridge</module>
-    <module>firecrest-indexer</module>
+    <module>firecrest</module>
   </modules>
 
   <build>
