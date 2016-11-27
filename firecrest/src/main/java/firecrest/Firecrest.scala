@@ -45,9 +45,7 @@ class FirecrestApplication extends Application[FirecrestConfiguration] {
           new ConfigModule(),
           new BridgeActorsModule(),
           new ElasticSearchClientModule())
-        .extensions(
-          classOf[BridgeApplication],
-          classOf[IndexerApplication])
+        .extensions(classOf[FirecrestManaged])
         .build())
   }
 

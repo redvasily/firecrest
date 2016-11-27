@@ -12,40 +12,40 @@ class SupervisorActor extends Actor
 
   import context._
 
-  val kafkaSink = actorOf(props(classOf[KafkaOutputActor]), "kafka-graph")
+  val kafkaSink: ActorRef = actorOf(props(classOf[KafkaOutputActor]), "kafka-graph")
 
-  val listenerActor = actorOf(
+  val listenerActor: ActorRef = actorOf(
     props(
       classOf[TcpListener],
       classOf[TcpListener.Factory],
       ((factory: TcpListener.Factory) => factory.create(kafkaSink)).asJava),
     "listener")
 
-  val graphiteListenerActor = actorOf(
+  val graphiteListenerActor: ActorRef = actorOf(
     props(
       classOf[UdpGraphiteListener],
       classOf[UdpGraphiteListener.Factory],
       ((factory: UdpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
     "graphiteListener")
 
-  val graphiteListenerTcpActor = actorOf(
+  val graphiteListenerTcpActor: ActorRef = actorOf(
     props(
       classOf[TcpGraphiteListener],
       classOf[TcpGraphiteListener.Factory],
       ((factory: TcpGraphiteListener.Factory) => factory.create(kafkaSink)).asJava),
     "graphiteListenerTcp")
 
-  val templateUploadActor = actorOf(props(classOf[TemplateUploadActor]))
+  val templateUploadActor: ActorRef = actorOf(props(classOf[TemplateUploadActor]))
 
   override def preStart() = {
-    system.scheduler.scheduleOnce(1 second, self, "tick")
+    system.scheduler.scheduleOnce(1.second, self, "tick")
   }
 
   override def postRestart(reason: Throwable) = {}
 
   override def receive: Receive = {
     case "tick" =>
-      system.scheduler.scheduleOnce(10 seconds, self, "tick")
+      system.scheduler.scheduleOnce(10.seconds, self, "tick")
       log.info("Searching")
       self ! context.parent.path
 
