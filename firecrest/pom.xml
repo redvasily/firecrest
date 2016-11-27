@@ -2,16 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>firecrest</artifactId>
+  <groupId>firecrest</groupId>
   <packaging>jar</packaging>
   <version>0.1-SNAPSHOT</version>
   <name>firecrest</name>
   <url>http://maven.apache.org</url>
-
-  <parent>
-    <groupId>firecrest</groupId>
-    <artifactId>firecrest-main</artifactId>
-    <version>0.1-SNAPSHOT</version>
-  </parent>
 
   <properties>
     <scala.version>2.11.7</scala.version>
