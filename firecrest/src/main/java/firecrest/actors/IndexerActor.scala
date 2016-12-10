@@ -21,22 +21,21 @@ class IndexerActor @Inject() (kafkaConfig: KafkaConfiguration,
 
   val kafka = new ReactiveKafka()
 
-  val consumerProperties = props(classOf[KafkaActorPublisher])
+  private val consumerProperties = props(classOf[KafkaActorPublisher])
 
   log.info(s"Consumer properties: $consumerProperties")
 
-  val consumerActorProps = props(classOf[KafkaActorPublisher])
-  val kafkaSource = Source.actorPublisher[String](consumerActorProps)
+  private val consumerActorProps = props(classOf[KafkaActorPublisher])
+  private val kafkaSource = Source.actorPublisher[String](consumerActorProps)
 
   val batchId = new AtomicLong()
 
-  val graph = RunnableGraph.fromGraph(GraphDSL.create(kafkaSource) {
+  private val graph = RunnableGraph.fromGraph(GraphDSL.create(kafkaSource) {
     implicit builder =>
       implicit source =>
         import GraphDSL.Implicits._
 
-        val printSink = Sink.foreach[AnyRef](line => println(s"Received: $line"))
-        val group = Flow[String].groupedWithin(10000, 5000 millis)
+        val group = Flow[String].groupedWithin(10000, 5000.millis)
         val batchWrap = Flow[Seq[String]].map(lines =>
           EsActorSubscriber.Batch(batchId.incrementAndGet(), lines)
         )
@@ -61,6 +60,6 @@ class IndexerActor @Inject() (kafkaConfig: KafkaConfiguration,
     case terminated: Terminated =>
       log.info(s"Received terminated: $terminated")
       log.info("Asking to crash")
-      system.scheduler.scheduleOnce(3000 millis, self, "die")
+      system.scheduler.scheduleOnce(3000.millis, self, "die")
   }
 }
