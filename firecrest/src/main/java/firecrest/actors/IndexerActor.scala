@@ -21,19 +21,6 @@ class IndexerActor @Inject() (kafkaConfig: KafkaConfiguration,
 
   val kafka = new ReactiveKafka()
 
-//  val consumerProperties = ConsumerProperties(
-//    bootstrapServers = s"${kafkaConfig.host}:${kafkaConfig.port}",
-//    topic = kafkaConfig.topic,
-//    groupId = "firecrest-indexer",
-//    valueDeserializer = new StringDeserializer())
-//    .setProperty("enable.auto.commit", "true")
-//    .setProperty("auto.offset.reset", "latest")
-//    .setProperty("heartbeat.interval.ms", "1000")
-//    .setProperty("request.timeout.ms", "60000")
-////    .setProperties("session.timeout.ms")
-//    .setProperty("fetch.max.wait.ms", "10000")
-//    .commitInterval(100 millis)
-
   val consumerProperties = props(classOf[KafkaActorPublisher])
 
   log.info(s"Consumer properties: $consumerProperties")
@@ -49,13 +36,10 @@ class IndexerActor @Inject() (kafkaConfig: KafkaConfiguration,
         import GraphDSL.Implicits._
 
         val printSink = Sink.foreach[AnyRef](line => println(s"Received: $line"))
-//        val extractBody = Flow[ConsumerRecord[Array[Byte], String]]
-//          .map(record => record.value())
         val group = Flow[String].groupedWithin(10000, 5000 millis)
         val batchWrap = Flow[Seq[String]].map(lines =>
           EsActorSubscriber.Batch(batchId.incrementAndGet(), lines)
         )
-//        val bcast = builder.add(Broadcast[EsActorSubscriber.Batch](2))
         val esSink = Sink.actorSubscriber(props(classOf[EsActorSubscriber]))
 
         // @formatter:off
