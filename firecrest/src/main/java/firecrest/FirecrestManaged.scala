@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import akkaguiceutils.GuiceExtension
-import firecrest.actors.{KafkaInputActor, SupervisorActor}
+import firecrest.actors.{IndexerActor, SupervisorActor}
 import io.dropwizard.lifecycle.Managed
 import org.slf4j.LoggerFactory
 
@@ -25,7 +25,7 @@ class FirecrestManaged @Inject()(system: ActorSystem) extends Managed {
     log.info("Start")
     val guiceExtension = GuiceExtension.get(system)
     system.actorOf(
-      guiceExtension.props(classOf[KafkaInputActor]),
+      guiceExtension.props(classOf[IndexerActor]),
       "kafka-input")
     system.actorOf(guiceExtension.props(classOf[SupervisorActor]),
       "supervisor")

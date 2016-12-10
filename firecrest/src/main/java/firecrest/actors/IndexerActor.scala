@@ -12,7 +12,7 @@ import firecrest.config.{ElasticSearchConfig, KafkaConfiguration}
 
 import scala.concurrent.duration._
 
-class KafkaInputActor @Inject() (kafkaConfig: KafkaConfiguration,
+class IndexerActor @Inject() (kafkaConfig: KafkaConfiguration,
                                  elasticSearchConfig: ElasticSearchConfig)
   extends Actor with ActorLogging with GuiceUtils {
 
