@@ -36,7 +36,7 @@ class KafkaOutputActor @Inject() (config: KafkaConfiguration) extends Actor
         import GraphDSL.Implicits._
 
         val bcast = builder.add(Broadcast[ByteString](2))
-        val printSink = Sink.foreach[String](line => println(s"Sending: $line"))
+        val printSink = Sink.foreach[String](line => log.debug("Sending: {}", line))
         val toString = Flow[ByteString].map(byteString => byteString.utf8String)
         val toKafkaMessage = Flow[ByteString].map(
           byteString => ValueProducerMessage(byteString.toArray))
