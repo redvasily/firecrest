@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import akkaguiceutils.GuiceExtension
-import firecrest.actors.{IndexerActor, ListenerSupervisorActor}
+import firecrest.actors.TopActor
 import io.dropwizard.lifecycle.Managed
 import org.slf4j.LoggerFactory
 
@@ -25,14 +25,6 @@ class FirecrestManaged @Inject()(
 
   override def start(): Unit = {
     log.info("Start")
-    val guiceExtension = GuiceExtension.get(system)
-    if (!config.enableIndexer) {
-      log.warn("INDEXER IS DISABLED")
-      system.actorOf(
-        guiceExtension.props(classOf[IndexerActor]),
-        "indexer")
-    }
-    system.actorOf(guiceExtension.props(classOf[ListenerSupervisorActor]),
-      "supervisor")
+    system.actorOf(GuiceExtension.get(system).props(classOf[TopActor]), "top")
   }
 }
