@@ -88,5 +88,16 @@
       shell: /bin/systemctl enable elasticsearch.service
       when: elasticsearch.changed == True
 
+    - name: Set elasticsearch listen host
+      lineinfile: dest="/etc/elasticsearch/elasticsearch.yml"
+                  insertafter='.*network.host.*192.168.0.1.*'
+                  line="network.host{{":"}} {{ static_ip }}"
+                  state=present
+      register: elasticsearch_host
+
+    - name: Restart elasticsearch
+      service: name='elasticsearch' state='restarted'
+      when: elasticsearch_host.changed == True
+
     - name: Start Elasticsearch
       service: name='elasticsearch' state='started'
