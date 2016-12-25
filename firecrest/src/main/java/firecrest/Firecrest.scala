@@ -25,8 +25,10 @@ class FirecrestConfiguration(
   val udpGraphitePort: Int,
 
   @JsonProperty(value = "tcpGraphitePort", required = true)
-  val tcpGraphitePort: Int)
+  val tcpGraphitePort: Int,
 
+  @JsonProperty(value = "enableIndexer", required = false)
+  val enableIndexer: Boolean = false)
   extends Configuration {}
 
 class FirecrestApplication extends Application[FirecrestConfiguration] {

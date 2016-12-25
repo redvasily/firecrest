@@ -4,16 +4,18 @@ import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import akkaguiceutils.GuiceExtension
-import firecrest.actors.{IndexerActor, SupervisorActor}
+import firecrest.actors.{IndexerActor, ListenerSupervisorActor}
 import io.dropwizard.lifecycle.Managed
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class FirecrestManaged @Inject()(system: ActorSystem) extends Managed {
+class FirecrestManaged @Inject()(
+  system: ActorSystem,
+  config: FirecrestConfiguration) extends Managed {
 
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
 
   override def stop(): Unit = {
     log.info("Stop")
@@ -24,10 +26,13 @@ class FirecrestManaged @Inject()(system: ActorSystem) extends Managed {
   override def start(): Unit = {
     log.info("Start")
     val guiceExtension = GuiceExtension.get(system)
-    system.actorOf(
-      guiceExtension.props(classOf[IndexerActor]),
-      "kafka-input")
-    system.actorOf(guiceExtension.props(classOf[SupervisorActor]),
+    if (!config.enableIndexer) {
+      log.warn("INDEXER IS DISABLED")
+      system.actorOf(
+        guiceExtension.props(classOf[IndexerActor]),
+        "indexer")
+    }
+    system.actorOf(guiceExtension.props(classOf[ListenerSupervisorActor]),
       "supervisor")
   }
 }
