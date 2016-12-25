@@ -3,4 +3,6 @@ target/
 *.iml
 dependency-reduced-pom.xml
 .vagrant/*
-
+version.properties
+firecrest/src/deb/control/control
+firecrest/src/deb/service/run

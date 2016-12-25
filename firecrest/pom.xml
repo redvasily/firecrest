@@ -4,7 +4,7 @@
   <artifactId>firecrest</artifactId>
   <groupId>firecrest</groupId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
+  <version>${firecrest.version}</version>
   <name>firecrest</name>
   <url>http://maven.apache.org</url>
 
@@ -16,6 +16,24 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>../version.properties</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -100,6 +118,52 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>jdeb</artifactId>
+        <groupId>org.vafer</groupId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <deb>${project.build.directory}/${project.artifactId}_${firecrest.version}.deb</deb>
+              <dataSet>
+                <data>
+                  <src>${project.build.directory}/${project.build.finalName}.jar</src>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/opt/firecrest</prefix>
+                  </mapper>
+                </data>
+                <data>
+                  <src>src/deb/config</src>
+                  <type>directory</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/etc/firecrest.d</prefix>
+                    <user>www-data</user>
+                    <filemode>664</filemode>
+                  </mapper>
+                </data>
+                <data>
+                  <src>src/deb/service/run</src>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/etc/service/firecrest</prefix>
+                    <user>www-data</user>
+                    <filemode>775</filemode>
+                  </mapper>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

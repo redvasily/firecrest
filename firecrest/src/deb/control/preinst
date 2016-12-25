@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mkdir -p /var/log/firecrest
+chown -R www-data:www-data /var/log/firecrest

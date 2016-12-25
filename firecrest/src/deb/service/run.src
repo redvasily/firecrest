@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export LC_ALL=en_US.UTF-8
+exec chpst -u www-data java -jar /usr/opt/firecrest/firecrest-[[version]].jar server /etc/firecrest.d/firecrest.yml

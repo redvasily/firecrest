@@ -1,0 +1,9 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: Vasily Sulatskov <vasily@sulatskov.net>
+Description: [[name]]
+Distribution: development
+Depends: java8-runtime, runit

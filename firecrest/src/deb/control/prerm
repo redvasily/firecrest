@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sv stop firefox || sv kill firefox
+:
