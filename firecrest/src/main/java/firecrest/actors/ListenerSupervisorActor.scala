@@ -6,7 +6,7 @@ import akkaguiceutils.GuiceUtils
 import scala.concurrent.duration._
 import scala.compat.java8.FunctionConverters._
 
-class SupervisorActor extends Actor
+class ListenerSupervisorActor extends Actor
   with ActorLogging
   with GuiceUtils {
 
@@ -46,14 +46,14 @@ class SupervisorActor extends Actor
   override def receive: Receive = {
     case "tick" =>
       system.scheduler.scheduleOnce(10.seconds, self, "tick")
-      log.info("Searching")
+      log.debug("Searching")
       self ! context.parent.path
 
     case path: ActorPath =>
       context.actorSelection(path / "*") ! Identify(())
 
     case identity @ ActorIdentity(_, Some(ref)) =>
-      log.info(s"Actor: ${ref.path}")
+      log.debug(s"Actor: ${ref.path}")
       self ! ref.path
   }
 }
