@@ -8,9 +8,9 @@ import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
 import akka.stream.actor.{ActorSubscriber, ActorSubscriberMessage, MaxInFlightRequestStrategy}
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import firecrest.IndexNames
 import org.elasticsearch.client.support.AbstractClient
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 
 object EsActorSubscriber {
   case class Batch(id: Long, messages: Seq[String]) {
@@ -22,7 +22,7 @@ object EsActorSubscriber {
   case class Done()
 }
 
-class EsActorSubscriber @Inject() (client: AbstractClient)
+class EsActorSubscriber @Inject() (client: AbstractClient, indexNames: IndexNames)
   extends ActorSubscriber with ActorLogging {
 
   import ActorSubscriberMessage._
@@ -38,10 +38,10 @@ class EsActorSubscriber @Inject() (client: AbstractClient)
 
   val objectMapper = new ObjectMapper()
 
-  val router = {
+  private val router = {
     val routees = Vector.fill(maxConcurrentRequests) {
       ActorRefRoutee(context.actorOf(
-        Props.create(classOf[EsIndexWorker], "@timestamp", client, objectMapper)))
+        Props.create(classOf[EsIndexWorker], "@timestamp", client, objectMapper, indexNames)))
     }
     Router(RoundRobinRoutingLogic(), routees)
   }
@@ -59,13 +59,15 @@ class EsActorSubscriber @Inject() (client: AbstractClient)
   }
 }
 
-class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: ObjectMapper)
+// FIXME: shouldn't this actor has a special "blocking" dispatcher
+// FIXME: also we need to inject stuff directly instead of passing them through a parent
+class EsIndexWorker(
+  timestampField: String, client: AbstractClient, mapper: ObjectMapper, indexNames: IndexNames)
   extends Actor with ActorLogging {
 
   import EsActorSubscriber._
 
-  val timestampPath = "/" + timestampField
-  val indexNameFormatter = DateTimeFormat.forPattern("YYYY-MM-dd")
+  private val timestampPath = "/" + timestampField
 
   @throws[Exception](classOf[Exception])
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
@@ -89,7 +91,7 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
                 .setSource(msg))
 
             case None =>
-              log.warning(s"Unable to compute index name for '${msg}'")
+              log.warning(s"Unable to compute index name for '{}'", msg)
           }
         }
         val bulkResponse = bulkRequest.get()
@@ -118,6 +120,6 @@ class EsIndexWorker(timestampField: String, client: AbstractClient, mapper: Obje
         case _: IllegalArgumentException =>
           None
       }}
-    timestamp.map("log-" + indexNameFormatter.print(_))
+    timestamp.map(indexNames.indexName)
   }
 }
