@@ -3,7 +3,7 @@ package firecrest.actors
 import javax.inject.Inject
 
 import akka.actor.{Actor, ActorLogging}
-import firecrest.IndexNames
+import firecrest.{FirecrestConfiguration, IndexNames}
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest
 import org.elasticsearch.client.support.AbstractClient
@@ -11,14 +11,16 @@ import org.joda.time.DateTime
 
 import scala.concurrent.duration._
 
-class IndexScanActor @Inject() (client: AbstractClient, indexNames: IndexNames)
-  extends Actor with ActorLogging {
+class IndexScanActor @Inject() (
+  client: AbstractClient,
+  indexNames: IndexNames,
+  config: FirecrestConfiguration) extends Actor with ActorLogging {
 
   import context._
 
   case object Tick {}
   private val interval = 1000.millis
-  private val keepIndices = org.joda.time.Duration.standardDays(120)
+  private val keepIndices = org.joda.time.Duration.standardDays(config.keepData.toDays)
 
   private var tick = system.scheduler.scheduleOnce(interval, self, Tick)
 

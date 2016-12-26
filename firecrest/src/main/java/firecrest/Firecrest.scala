@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import firecrest.config.{ElasticSearchConfig, KafkaConfiguration}
 import firecrest.guice.{ActorSystemModule, BridgeActorsModule, ConfigModule, ElasticSearchClientModule}
 import io.dropwizard.setup.{Bootstrap, Environment}
+import io.dropwizard.util.Duration
 import io.dropwizard.{Application, Configuration}
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.feature.ManagedInstaller
@@ -28,7 +29,10 @@ class FirecrestConfiguration(
   val tcpGraphitePort: Int,
 
   @JsonProperty(value = "enableIndexer", required = false)
-  val enableIndexer: Boolean = false)
+  val enableIndexer: Boolean = false,
+
+  @JsonProperty(value = "keepData", required = true)
+  val keepData : Duration)
   extends Configuration {}
 
 class FirecrestApplication extends Application[FirecrestConfiguration] {

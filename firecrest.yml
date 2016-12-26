@@ -36,3 +36,5 @@ kafka:
 elasticSearch:
   host: 192.168.13.37
   port: 9300
+
+keepData: 120days
