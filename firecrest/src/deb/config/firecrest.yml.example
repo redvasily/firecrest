@@ -1,0 +1,38 @@
+server:
+  maxThreads: 32
+  minThreads: 8
+  maxQueuedRequests: 1024
+  rootPath: '/api/*'
+  applicationConnectors:
+  - type: http
+    port: 9123
+  adminConnectors:
+  - type: http
+    port: 9124
+
+logging:
+  appenders:
+#    - type: file
+#      currentLogFilename: /var/log/firecrest/bridge.log
+#      archivedLogFilenamePattern: /var/log/firecrest/bridge-%d-%i.log.gz
+#      archivedFileCount: 10
+#      maxFileSize: 50MB
+    - type: console
+      threshold: INFO
+      timeZone: UTC
+      target: stdout
+#      logFormat: # TODO
+
+bindHost: localhost
+tcpMessagePort: 9125
+tcpGraphitePort: 9126
+udpGraphitePort: 9125
+
+kafka:
+  host: 192.168.13.37
+  port: 9092
+  topic: firecrest-messages
+
+elasticSearch:
+  host: 192.168.13.37
+  port: 9300
