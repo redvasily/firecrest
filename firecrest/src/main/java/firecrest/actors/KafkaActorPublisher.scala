@@ -74,14 +74,14 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfiguration)
 
   override def receive = {
     case Batch(messages) =>
-      log.info(s"Received a batch: ${messages.size} messages")
+      log.info("Received a batch: {} messages", messages.size)
       buffer = buffer ++ messages
       deliverBuf()
       if (buffer.size >= maxBufferSize) {
         wantReaderAlive = false
         controlReader()
       }
-      log.info(s"Buffer size: ${buffer.size}")
+      log.debug("Buffer size: {}", buffer.size)
 
     case Request(_) =>
       deliverBuf()
@@ -106,14 +106,13 @@ class KafkaActorPublisher @Inject() (kafkaConfig: KafkaConfiguration)
         val (use, keep) = buffer.splitAt(totalDemand.toInt)
         buffer = keep
         //        use.foreach(msg => log.info(s"Sending: $msg"))
-        log.info(s"use: ${use.size} keep: ${keep.size}")
+        log.debug("use: {} keep: {}", use.size, keep.size)
         use.foreach(onNext)
         maybeResume()
       } else {
         val (use, keep) = buffer.splitAt(Int.MaxValue)
         buffer = keep
-        log.info(s"use: ${use.size} keep: ${keep.size}")
-        //        use.foreach(msg => log.info(s"Sending: $msg"))
+        log.debug("use: {} keep: {}", use.size, keep.size)
         use.foreach(onNext)
         maybeResume()
         deliverBuf()

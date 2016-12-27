@@ -54,11 +54,11 @@ class KafkaOutputActor @Inject() (config: KafkaConfiguration) extends Actor
 
   override def receive: Receive = {
     case "die" =>
-      log.info("Witness me")
+      log.info("Kafka failure. Crashing this actor.")
       throw new RuntimeException("Kafka failure")
 
     case data: ByteString =>
-      log.info(s"Forwarding: ${data.utf8String}")
+      log.debug("Forwarding: {}", data.utf8String)
       sourceActor ! data
 
     case terminated: Terminated =>

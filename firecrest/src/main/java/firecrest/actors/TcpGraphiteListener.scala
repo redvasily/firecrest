@@ -50,7 +50,7 @@ class GraphiteConnectionHandler(hostname: String, receiver: ActorRef)
 
   override def receive = {
     case Received(data) =>
-      log.info("Got some data")
+      log.debug("Received some data")
       val (lines, remainder) = splitLines(data)
       lines.size match {
         case 0 =>
@@ -59,10 +59,11 @@ class GraphiteConnectionHandler(hostname: String, receiver: ActorRef)
         case _ =>
           val firstLine = buffer ++ lines.head
           val allLines = firstLine +: lines.tail
-          val graphiteMessages = allLines.flatMap(GraphiteMessage.parse(_))
+          val graphiteMessages = allLines.flatMap(GraphiteMessage.parse)
           val metricsMessages = graphiteMessages
             .map(MetricsMessage.fromGraphite(hostname, _))
-          log.info(s"Messages: $metricsMessages")
+          log.debug("Messages: {}", metricsMessages)
+          log.info("Received {} messages", metricsMessages.size)
           metricsMessages.foreach(receiver ! _.formatJson())
       }
     case PeerClosed =>
