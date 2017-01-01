@@ -9,6 +9,7 @@
   <url>http://maven.apache.org</url>
 
   <properties>
+    <akka.version>2.4.16</akka.version>
     <scala.version>2.11.7</scala.version>
     <scala.version.tools>2.11</scala.version.tools>
     <dropwizard.version>0.9.2</dropwizard.version>
@@ -192,17 +193,17 @@
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.11</artifactId>
-      <version>2.4.2</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-slf4j_2.11</artifactId>
-      <version>2.4.2</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-stream_2.11</artifactId>
-      <version>2.4.2</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.nscala-time</groupId>
